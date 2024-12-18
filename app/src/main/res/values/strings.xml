@@ -1,6 +1,11 @@
 <resources>
     <string name="app_name">NTO Pass</string>
     <string name="log_in">Log in</string>
-    <string name="enter_email">Enter your email</string>
-    <string name="enter_password">Enter your password</string>
+    <string name="log_out">Log out</string>
+    <string name="refresh">Refresh</string>
+    <string name="scan">Scan</string>
+    <string name="enter_email">Enter your login</string>
+    <string name="smthwr">Something wrong</string>
+    <string name="success">Успешно</string>
+    <string name="canceled">Operation was cancelled</string>
 </resources>

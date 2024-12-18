@@ -1,0 +1,11 @@
+<resources>
+    <string name="app_name">NTO Pass</string>
+    <string name="log_in">Войти</string>
+    <string name="log_out">Выйти</string>
+    <string name="refresh">Обновить</string>
+    <string name="scan">QR-Скан</string>
+    <string name="enter_email">Введите ваш логин</string>
+    <string name="smthwr">Что-то пошло не так</string>
+    <string name="success">Успешно</string>
+    <string name="canceled">Вход был отменён</string>
+</resources>

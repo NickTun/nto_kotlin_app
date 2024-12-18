@@ -8,7 +8,9 @@ import android.content.SharedPreferences
 import android.util.Log
 import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AppCompatActivity
+import androidx.fragment.app.FragmentActivity
 import androidx.fragment.app.FragmentManager
+import androidx.navigation.NavController
 import androidx.navigation.createGraph
 import androidx.navigation.findNavController
 import androidx.navigation.fragment.NavHostFragment
@@ -21,14 +23,19 @@ import ru.myitschool.work.ui.main.MainDestination
 import ru.myitschool.work.ui.main.MainFragment
 import ru.myitschool.work.ui.qr.scan.QrScanDestination
 import ru.myitschool.work.ui.qr.scan.QrScanFragment
-import ru.myitschool.work.core.Constants.SHARED_PREFS
-import ru.myitschool.work.core.Constants.EMAIL_KEY
+import ru.myitschool.work.core.env.SHARED_PREFS
+import ru.myitschool.work.core.env.EMAIL_KEY
+import ru.myitschool.work.ui.qr.results.QrResultDestination
+import ru.myitschool.work.ui.qr.results.QrResultFragment
 
 // НЕ ИЗМЕНЯЙТЕ НАЗВАНИЕ КЛАССА!
 @AndroidEntryPoint
 class RootActivity : AppCompatActivity() {
     private lateinit var sharedpreferences: SharedPreferences
+    public lateinit var navController: NavController
     private var username: String? = null
+
+    var qrData = ""
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -36,25 +43,24 @@ class RootActivity : AppCompatActivity() {
         sharedpreferences = getSharedPreferences(SHARED_PREFS, Context.MODE_PRIVATE)
         username = sharedpreferences.getString(EMAIL_KEY, null)
 
-//        with(sharedpreferences.edit()) {
-//            clear()
-//            apply()
-//        }
-
         setContentView(R.layout.activity_root)
 
         val navHostFragment = supportFragmentManager
             .findFragmentById(R.id.nav_host_fragment) as NavHostFragment?
 
+        navController = navHostFragment?.navController!!
+
         if (navHostFragment != null) {
-            val navController = navHostFragment.navController
-            navController.graph = navController.createGraph(
+            navController?.graph = navController?.createGraph(
                 startDestination = if (username != null) MainDestination else LoginDestination
             ) {
                 fragment<LoginFragment, LoginDestination>()
                 fragment<MainFragment, MainDestination>()
                 fragment<QrScanFragment, QrScanDestination>()
-            }
+                fragment<QrResultFragment, QrResultDestination>()
+            }!!
+
+//            navController.navigate(QrResultDestination)
         }
 
         onBackPressedDispatcher.addCallback(
@@ -68,7 +74,6 @@ class RootActivity : AppCompatActivity() {
     }
 
     override fun onSupportNavigateUp(): Boolean {
-        val navController = findNavController(R.id.nav_host_fragment)
         val popBackResult = if (navController.previousBackStackEntry != null) {
             navController.popBackStack()
         } else {

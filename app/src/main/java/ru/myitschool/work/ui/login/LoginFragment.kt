@@ -1,12 +1,13 @@
 package ru.myitschool.work.ui.login
 
 import RetrofitClient
-import RetrofitClient.apiInterface
+import RetrofitClient.getInstance
 import android.content.Context
 import android.content.SharedPreferences
 import android.os.Bundle
 import android.util.Log
 import android.view.View
+import androidx.core.widget.addTextChangedListener
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
@@ -22,8 +23,10 @@ import ru.myitschool.work.databinding.FragmentLoginBinding
 import ru.myitschool.work.ui.RootActivity
 import ru.myitschool.work.ui.main.MainFragment
 import ru.myitschool.work.ApiService
-import ru.myitschool.work.core.Constants.EMAIL_KEY
-import ru.myitschool.work.core.Constants.SHARED_PREFS
+import ru.myitschool.work.core.env.EMAIL_KEY
+import ru.myitschool.work.core.env.SHARED_PREFS
+import ru.myitschool.work.ui.main.MainDestination
+import ru.myitschool.work.ui.qr.scan.QrScanDestination
 
 @AndroidEntryPoint
 class LoginFragment : Fragment(R.layout.fragment_login) {
@@ -39,31 +42,44 @@ class LoginFragment : Fragment(R.layout.fragment_login) {
         binding.login.setOnClickListener(View.OnClickListener {
             handleLogin()
         })
+
+        binding.username.addTextChangedListener {
+            val name = binding.username.text.toString()
+            if(name != "" && name.length >= 3 && !isNumericToX(name[0].toString()) && name.matches(Regex("^[A-Za-z0-9]+\$"))) {
+                binding.login.isEnabled = true
+                binding.login.isClickable = true
+            } else {
+                binding.login.isEnabled = false
+                binding.login.isClickable = false
+            }
+        }
+    }
+
+    fun isNumericToX(toCheck: String): Boolean {
+        return toCheck.toDoubleOrNull() != null
     }
 
     private fun handleLogin() {
         binding.loading.visibility = View.VISIBLE
-        binding.username.visibility = View.GONE
-        binding.login.visibility = View.GONE
+        binding.fields.visibility = View.GONE
 
         sharedpreferences = activity?.getSharedPreferences(SHARED_PREFS, Context.MODE_PRIVATE)!!
 
-        lifecycleScope.launch(Dispatchers.IO) {
+        MainScope().launch {
             try {
+                val apiInterface = getInstance().create(ApiService::class.java)
                 val result = apiInterface.auth(binding.username.text.toString())
                 with(sharedpreferences.edit()) {
                     putString(EMAIL_KEY, binding.username.text.toString())
                     apply()
                 }
-                (activity as RootActivity).navigate(R.id.nav_host_fragment, MainFragment())
+                (activity as RootActivity).navController?.popBackStack()
+                (activity as RootActivity).navController?.navigate(MainDestination)
             } catch (e: Exception) {
-                withContext(Dispatchers.Main) {
-                    binding.loading.visibility = View.GONE
-                    binding.error.visibility = View.VISIBLE
-                    binding.error.text = e.toString()
-                }
-
-                Log.d("ueban", ""+e)
+                binding.loading.visibility = View.GONE
+                binding.fields.visibility = View.VISIBLE
+                binding.error.visibility = View.VISIBLE
+                binding.error.text = e.toString()
             }
         }
     }
